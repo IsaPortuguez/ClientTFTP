@@ -6,6 +6,7 @@
 package clienttftp;
 
 import Client.Client;
+import GUI.MainWindow;
 import java.io.IOException;
 import javax.swing.JOptionPane;
 
@@ -22,6 +23,7 @@ public class ClientTFTP {
         String ip = JOptionPane.showInputDialog(null, "Ingrese la ip");
         Client myClient = new Client(69, ip);
         myClient.start();
+        MainWindow window = new MainWindow(myClient);
     }
     
 }
