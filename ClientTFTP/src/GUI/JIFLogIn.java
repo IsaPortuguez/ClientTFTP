@@ -1,5 +1,6 @@
 package GUI;
 
+import Domain.User;
 import Utility.MyUtility;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -39,7 +40,7 @@ public class JIFLogIn extends JInternalFrame implements ActionListener{
         this.tfUserName = new JTextField();
         this.tfPassword = new JPasswordField();
         this.btnAccept = new JButton("Ingresar");
-        this.btnCancel = new JButton("Volver");
+        this.btnCancel = new JButton("Salir");
 
         this.jlbUserName.setBounds(5, 5, 100, 30);
         this.tfUserName.setBounds(115, 5, 100, 30);
@@ -68,8 +69,11 @@ public class JIFLogIn extends JInternalFrame implements ActionListener{
                 String estado;
                 try {
                     estado = MainWindow.client.logInUser(tfUserName.getText(), tfPassword.getText());
+                    User userTemp= new User(tfUserName.getText(), tfPassword.getText());
                     if(estado.equals(MyUtility.EXISTE)){
                         JOptionPane.showMessageDialog(this, "Se ingresó correctamente");
+                        MainWindow.user = userTemp;
+                        MainWindow.iniciado = true;
                         this.dispose();
                     }else if(estado.equals(MyUtility.NOEXISTE)){
                         JOptionPane.showMessageDialog(this, "Este usuario no existe, verifique sus datos");

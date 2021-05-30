@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -22,6 +23,7 @@ public class MainWindow extends JFrame implements ActionListener{
     public static JDesktopPane desktop;  
     public static Client client;
     public static User user;
+    public static boolean iniciado = false;
 
     public MainWindow(Client client) {
         super();
@@ -35,6 +37,7 @@ public class MainWindow extends JFrame implements ActionListener{
     
     public void init() {
 
+        this.user = new User();
         this.jMenuAdd = new JMenu("Usuario");
         this.jMenuImages = new JMenu("Imagen");
         this.jMenuBar = new JMenuBar();
@@ -71,8 +74,12 @@ public class MainWindow extends JFrame implements ActionListener{
             JIFLogIn jifLogIn = new JIFLogIn();
             this.desktop.add(jifLogIn);
         }else if(e.getSource() == this.jmiUpDown){
-            JIFImages jifImages = new JIFImages();
-            this.desktop.add(jifImages);
+            if(this.iniciado == true){
+                JIFImages jifImages = new JIFImages();
+                this.desktop.add(jifImages);
+            }else{
+                JOptionPane.showMessageDialog(null, "Necesita iniciar sesión para poder usar esta opción");
+            }
         }
     }
     

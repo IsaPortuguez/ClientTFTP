@@ -39,7 +39,7 @@ public class JIFCheckIn extends JInternalFrame implements ActionListener{
         this.tfUserName = new JTextField();
         this.tfPassword = new JPasswordField();
         this.btnAccept = new JButton("Registrar");
-        this.btnCancel = new JButton("Volver");
+        this.btnCancel = new JButton("Salir");
 
         this.jlbUserName.setBounds(5, 5, 100, 30);
         this.tfUserName.setBounds(115, 5, 100, 30);
