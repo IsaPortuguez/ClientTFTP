@@ -35,6 +35,7 @@ public class Client extends Thread {
         private DataInputStream dataInputStream = null;
         private BufferedOutputStream bufferedOutputStream = null;
         private BufferedInputStream bufferedInputStream = null;
+        private String[] files;
 
 	public Client(int socketPortNumber, String address) throws IOException {
 		this.socketPortNumber = socketPortNumber;
@@ -55,7 +56,7 @@ public class Client extends Thread {
                 String elementoString = this.receive.readLine();
                 System.out.println("Recibido " + elementoString);
             } catch (IOException ex) {
-                System.out.println("Client.Client.run() "+ex);
+                System.out.println("Client.Client.run() "+ex.toString());
 //                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
             while (true){
@@ -63,7 +64,7 @@ public class Client extends Thread {
                 try {
                     this.sleep(500);
                 } catch (InterruptedException ex) {
-                    System.out.println("Client.Client.run() "+ex);
+                    System.out.println("Client.Client.run() "+ex.toString());
 //                    Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
@@ -104,6 +105,16 @@ public class Client extends Thread {
             this.send.println(MyUtility.GUARDARENSERVER);
             
         }
+        
+        public String[] getDirectories() throws IOException {
+        this.send.println(MyUtility.OBTENERDIRECTORIOS);
+        String size = this.receive.readLine();
+        files = new String[Integer.parseInt(size)];
+        for (int i = 0; i < Integer.parseInt(size); i++) {
+            files[i] = this.receive.readLine();
+        }
+        return files;
+    }
         
         public DataOutputStream getDataOutputStream() {
             return dataOutputStream;

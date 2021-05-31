@@ -13,4 +13,5 @@ public class MyUtility {
     public static String NOEXISTE = "noexiste";
     public static String GUARDARENSERVER = "guardararchivoenserver";
     public static String DESCARGARDESERVER = "descargararchivodeserver";
+    public static String OBTENERDIRECTORIOS = "obtenerdirectorios";
 }

@@ -74,7 +74,7 @@ public class JIFCheckIn extends JInternalFrame implements ActionListener{
                         JOptionPane.showMessageDialog(this, "Este usuario ya existe, verifique sus datos");
                     }
                 } catch (IOException ex) {
-                    System.out.println("GUI.JIFCheckIn.actionPerformed() "+ex);
+                    System.out.println("GUI.JIFCheckIn.actionPerformed() "+ex.toString());
 //                    Logger.getLogger(JIFCheckIn.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 //break;

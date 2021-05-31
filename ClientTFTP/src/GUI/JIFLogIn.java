@@ -79,7 +79,7 @@ public class JIFLogIn extends JInternalFrame implements ActionListener{
                         JOptionPane.showMessageDialog(this, "Este usuario no existe, verifique sus datos");
                     }
                 } catch (IOException ex) {
-                    System.out.println("GUI.JIFLogIn.actionPerformed() "+ex);
+                    System.out.println("GUI.JIFLogIn.actionPerformed() "+ex.toString());
 //                    Logger.getLogger(JIFLogIn.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } 

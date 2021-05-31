@@ -8,8 +8,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
@@ -24,18 +29,15 @@ import javax.swing.JTextField;
  */
 public class JIFImages extends JInternalFrame implements ActionListener{
     
-    private JLabel jlbUpload, jlbDownload;
+    private JLabel jlbDownload;
     private JTextField jtfDownload;
     private JButton btnUpload, btnDownload, btnCancel;
     private JFileChooser jchooser = null;
+    private JIFTable tablePanel;
     private File image = null;
     private int imageSize = 0;
     private String imageName = "";
-    private FileInputStream fileInputStream = null;
-    private FileOutputStream fileOutputStream = null;
-    private BufferedInputStream bufferedInputStream = null;
-    private BufferedOutputStream bufferedOutputStream = null;
-    private byte[] buffer = null;
+    
     
 
     public JIFImages() {
@@ -49,15 +51,14 @@ public class JIFImages extends JInternalFrame implements ActionListener{
     }
     
     public void init() {
-        this.jlbUpload = new JLabel("Subir Archivo");
         this.jlbDownload = new JLabel("Bajar Archivo");
         this.jtfDownload = new JTextField();
         this.btnUpload = new JButton("Subir...");
         this.btnDownload = new JButton("Bajar");
         this.btnCancel = new JButton("Salir");
+        this.tablePanel = new JIFTable();
 
-        this.jlbUpload.setBounds(300, 100, 100, 30);
-        this.btnUpload.setBounds(630, 100, 100, 30);
+        this.btnUpload.setBounds(500, 100, 100, 30);
         this.jlbDownload.setBounds(300, 300, 100, 30);
         this.jtfDownload.setBounds(400, 300, 200, 30);
         this.btnDownload.setBounds(630, 300, 100, 30);
@@ -67,12 +68,12 @@ public class JIFImages extends JInternalFrame implements ActionListener{
         this.btnDownload.addActionListener(this);
         this.btnCancel.addActionListener(this);
 
-        this.add(this.jlbUpload);
         this.add(this.jlbDownload);
         this.add(this.jtfDownload);
         this.add(this.btnUpload);
         this.add(this.btnDownload);
         this.add(this.btnCancel);
+        this.add(tablePanel);
 	}
     
     @Override
@@ -84,16 +85,15 @@ public class JIFImages extends JInternalFrame implements ActionListener{
                 try {
                     MainWindow.client.sendImage();
                     chooseImage();
+                    this.dispose();
                 } catch (IOException ex) {
-                    System.err.println("GUI.JIFImages.actionPerformed() "+ex);
+                    System.out.println("GUI.JIFImages.actionPerformed() "+ex.toString());
 //                    Logger.getLogger(JIFImages.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }else{
                 if(e.getSource() == this.btnDownload){
                     MainWindow.client.sendImageName(this.jtfDownload.getText());
                     receiveImage();
-                    JIFImage jifImage = new JIFImage();
-                    MainWindow.desktop.add(jifImage);
                     this.dispose();
                 }
             } 
@@ -115,23 +115,23 @@ public class JIFImages extends JInternalFrame implements ActionListener{
         
         this.image = new File(imagePath);
         this.imageSize = (int) this.image.length();
-        
+
         MainWindow.client.getDataOutputStream().writeUTF(this.image.getName());
         MainWindow.client.getDataOutputStream().writeInt(this.imageSize);
-        
-        this.fileInputStream = new FileInputStream(imagePath);
-        this.bufferedInputStream = new BufferedInputStream(this.fileInputStream);
-        
-        this.buffer = new byte[this.imageSize];
-        
-        this.bufferedInputStream.read(this.buffer);
-        
-        for (int i = 0; i < this.buffer.length; i++) {
-            MainWindow.client.getBufferedOutputStream().write(this.buffer[i]);
+
+        FileInputStream fileInputStream = new FileInputStream(imagePath);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+
+        byte[] buffer = new byte[this.imageSize];
+
+        bufferedInputStream.read(buffer);
+
+        for (int i = 0; i < buffer.length; i++) {
+            MainWindow.client.getBufferedOutputStream().write(buffer[i]);
         }
-        
-        this.bufferedInputStream.close();
-        
+
+        bufferedInputStream.close();
+
         MainWindow.client.getBufferedOutputStream().flush();
         MainWindow.client.getDataOutputStream().flush();
         
@@ -139,43 +139,41 @@ public class JIFImages extends JInternalFrame implements ActionListener{
     
     public void receiveImage(){
         
-        while(true){
-            try {
-                this.imageName = MainWindow.client.getDataInputStream().readUTF();
-                this.imageSize = MainWindow.client.getDataInputStream().readInt();
-                
-                this.jchooser = new JFileChooser();
-                this.jchooser.setFileSelectionMode(JFileChooser.SAVE_DIALOG);
-                int returnVal = this.jchooser.showOpenDialog(this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    
-                    JOptionPane.showMessageDialog(this, "Directorio Seleccionado "+this.jchooser.getSelectedFile().getAbsolutePath());
-                    
-                    this.fileOutputStream = new FileOutputStream(this.jchooser.getSelectedFile().getAbsolutePath()+"\\"+this.imageName);
-                    
-                    this.bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-                    
-                    this.bufferedInputStream = MainWindow.client.getBufferedInputStream();
-                    
-                    this.buffer = new byte[imageSize];
-                    
-                    for (int i = 0; i < this.buffer.length; i++) {
-                        this.buffer[i] = (byte) this.bufferedInputStream.read();
-                    }
-                    
-                    this.bufferedOutputStream.write(this.buffer);
-                    
-                    this.bufferedOutputStream.flush();
-                    this.fileOutputStream.close();
-                    
+        try {
+            this.imageName = MainWindow.client.getDataInputStream().readUTF();
+            System.out.println("Img name: " +this.imageName);
+            this.imageSize = MainWindow.client.getDataInputStream().readInt();
+            System.out.println("Img size: " +this.imageSize);
+
+            this.jchooser = new JFileChooser();
+            this.jchooser.setFileSelectionMode(JFileChooser.SAVE_DIALOG);
+            int returnVal = this.jchooser.showOpenDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+
+                JOptionPane.showMessageDialog(this, "Directorio Seleccionado " + this.jchooser.getSelectedFile().getAbsolutePath());
+
+                FileOutputStream fileOutputStream = new FileOutputStream(this.jchooser.getSelectedFile().getAbsolutePath() + "\\" + this.imageName);
+
+                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+
+                BufferedInputStream bufferedInputStream = MainWindow.client.getBufferedInputStream();
+
+                byte[] buffer = new byte[imageSize];
+
+                for (int i = 0; i < buffer.length; i++) {
+                    buffer[i] = (byte) bufferedInputStream.read();
                 }
-                
-                
-            } catch (IOException ex) {
-                System.err.println("GUI.JIFImages.receiveImage() "+ex.toString());
-//                Logger.getLogger(JIFImages.class.getName()).log(Level.SEVERE, null, ex);
+
+                bufferedOutputStream.write(buffer);
+
+                bufferedOutputStream.flush();
+                fileOutputStream.close();
+
             }
+
+        } catch (IOException ex) {
+            System.out.println("GUI.JIFImages.receiveImage() " + ex.toString());
+//                Logger.getLogger(JIFImages.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
     }
 }
