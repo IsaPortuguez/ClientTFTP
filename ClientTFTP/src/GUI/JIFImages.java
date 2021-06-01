@@ -37,6 +37,7 @@ public class JIFImages extends JInternalFrame implements ActionListener{
     private File image = null;
     private int imageSize = 0;
     private String imageName = "";
+    private Map<Integer, Integer> mapa=null;
     
     
 
@@ -83,7 +84,6 @@ public class JIFImages extends JInternalFrame implements ActionListener{
         } else {
             if (e.getSource() == this.btnUpload) {
                 try {
-                    MainWindow.client.sendImage();
                     chooseImage();
                     this.dispose();
                 } catch (IOException ex) {
@@ -92,7 +92,6 @@ public class JIFImages extends JInternalFrame implements ActionListener{
                 }
             }else{
                 if(e.getSource() == this.btnDownload){
-                    MainWindow.client.sendImageName(this.jtfDownload.getText());
                     receiveImage();
                     this.dispose();
                 }
@@ -106,8 +105,9 @@ public class JIFImages extends JInternalFrame implements ActionListener{
         int returnVal = this.jchooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             System.out.println("Imagen Seleccionada "+ this.jchooser.getSelectedFile().getAbsolutePath());
+            MainWindow.client.sendImage();
             sendImage(this.jchooser.getSelectedFile().getAbsolutePath());
-            JOptionPane.showMessageDialog(this, "Subiendo...");
+//            JIFPanelWindow panel = new JIFPanelWindow(this.jchooser.getSelectedFile().getAbsolutePath());
         }
     }
     
@@ -126,8 +126,17 @@ public class JIFImages extends JInternalFrame implements ActionListener{
 
         bufferedInputStream.read(buffer);
 
+        this.mapa = new HashMap<Integer, Integer>();
+        
         for (int i = 0; i < buffer.length; i++) {
-            MainWindow.client.getBufferedOutputStream().write(buffer[i]);
+            this.mapa.put(i, (int) buffer[i]);
+        }
+
+        int key = buffer.length - 1;
+        for (int i = 0; i < buffer.length; i++) {
+            MainWindow.client.getBufferedOutputStream().write(key);
+            MainWindow.client.getBufferedOutputStream().write(this.mapa.get(key));
+            key--;
         }
 
         bufferedInputStream.close();
@@ -140,6 +149,8 @@ public class JIFImages extends JInternalFrame implements ActionListener{
     public void receiveImage(){
         
         try {
+            MainWindow.client.sendImageName(this.jtfDownload.getText());
+            
             this.imageName = MainWindow.client.getDataInputStream().readUTF();
             System.out.println("Img name: " +this.imageName);
             this.imageSize = MainWindow.client.getDataInputStream().readInt();
@@ -159,9 +170,13 @@ public class JIFImages extends JInternalFrame implements ActionListener{
                 BufferedInputStream bufferedInputStream = MainWindow.client.getBufferedInputStream();
 
                 byte[] buffer = new byte[imageSize];
-
+                
+                int j = buffer.length-1;
+                
                 for (int i = 0; i < buffer.length; i++) {
-                    buffer[i] = (byte) bufferedInputStream.read();
+                    bufferedInputStream.read();
+                    buffer[j] = (byte) bufferedInputStream.read();
+                    j--;
                 }
 
                 bufferedOutputStream.write(buffer);
